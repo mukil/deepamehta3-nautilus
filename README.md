@@ -15,6 +15,8 @@ Requirements
 ------------
 
     sudo apt-get install python-nautilus
+    sudo apt-get instalal python-setuptools
+    easy_install restclient
 
 Usage Hints
 -----------
