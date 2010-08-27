@@ -9,7 +9,7 @@ Installation
 on Ubuntu 10.04 with GNOME Desktop
 
     (optional) mkdir .nautilus/python-extensions/
-    cp deepamehta3-nautilus.py .nautilus/python-extensions/
+    cp your-local-git-repository/deepamehta3-nautilus.py ~/.nautilus/python-extensions/
 
 Requirements
 ------------
@@ -18,11 +18,11 @@ Requirements
     sudo apt-get instalal python-setuptools
     easy_install restclient
 
-Usage Hints
+Developer Hints
 -----------
 
-use the nautilus context menu
-
+use the nautilus context menu and listen what the plugin does already through executing in your favourite shell:
+    tail -fn 500 /var/log/syslog
 
 Version History
 ---------------
