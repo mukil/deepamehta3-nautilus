@@ -3,6 +3,8 @@ import syslog
 import nautilus
 import webbrowser
 import urllib
+import simplejson as json
+
 #
 from restclient import GET, POST, PUT, DELETE
 
@@ -38,7 +40,7 @@ class DeepMenuProvider(nautilus.MenuProvider):
         #
         if files[0].is_directory(): # if a folder item is selected, provide a command for a folder canvas
             view_menuitem = nautilus.MenuItem('DeepMenuProvider::FolderView', 'View with DeepaMehta', '')
-            view_menuitem.connect('activate', self.menu_activate_view, file) ### Fixme: signal is not triggered.. mmh
+            view_menuitem.connect('activate', self.menu_activate_view_folder, file) ### Fixme: signal is not triggered.. mmh
             
             return assoc_menuitem, view_menuitem, 
         else:
@@ -61,7 +63,7 @@ class DeepMenuProvider(nautilus.MenuProvider):
     ### Menu Item Handlers
         
     def menu_activate_file_muc(self, menu, files):
-        self.getTopicsByType(urllib.urlencode('de/deepamehta/core/topictype/ToDo', 'UTF-8'));
+        # self.getTopicsByType(urllib.urlencode('de/deepamehta/core/topictype/ToDo', 'UTF-8'));
         syslog.syslog('Command came from: ' + repr(menu))
         for crtFile in files:
             filename = urllib.unquote(crtFile.get_uri()[7:])
@@ -72,6 +74,13 @@ class DeepMenuProvider(nautilus.MenuProvider):
     def menu_activate_view(self, menu, file):
         #
         filename = urllib.unquote(file.get_uri()[7:])
+        existent = self.askForFolderCanvas(filename)
+        if existent:
+            self.updateFolderCanvasTopic(filename)
+        else:
+            # self.createFolderCanvasTopic(filename)
+            # will not create foldercanvas topics now - would create empty topicmaps all the time
+            syslog.syslog(' -- is not creating topicmaps -- ');
         files = []
         folders = []
         listedItems = os.listdir(filename)
@@ -82,13 +91,17 @@ class DeepMenuProvider(nautilus.MenuProvider):
                 elif os.path.isfile(filename+'/'+element):
                     files.append(filename+'/'+element)
         syslog.syslog('Handle Folder Canvas for folders: ' + repr(folders) + ' & files ' + repr(files))
-        self.openFolderCanvas('96')
+        # self.openFolderCanvas('96')
+        #
         # itemsInFolder = os.listdir(file.get_location().get_path())
         # syslog.syslog('backgroundItems:: ' + itemsInFolder)
         # fileInfo = nautilus.file_info_get_type(file)
         # fileType = fileInfo.get_file_type(file)
         # syslog.syslog('backgroundItems:fileInfo: ' + fileInfo)
-
+    
+    # another registration passing on the call 
+    def menu_activate_view_folder(self, menu, files):
+        menu_activate_view(self, menu, files)
 
     def menu_activate_start(self, menu, file):
         syslog.syslog("INFO: your local DeepaMehta server is going to be started..")
@@ -119,35 +132,79 @@ class DeepMenuProvider(nautilus.MenuProvider):
         #
         syslog.syslog('is now launching the folder canvas topicmap ('+mapId+') in your default webbrowser')
 
-
+    
+    def askForFolderCanvas(self, folderPath):
+        # http://localhost:8080/core/topic/by_property/{key}/{value}
+        key = 'de/deepamehta/core/property/Path'.replace("/", "%2F")
+        key = key.replace(" ", "%20")
+        #
+        value = folderPath.replace("/", "%2F")
+        value = value.replace(" ", "%20")
+        url = SERVICE_URL + '/topic/by_property/' + key + '/' + value
+        # syslog.syslog("monty.dmc.askForFolderCanvas:" + url)
+        response = GET(url,
+            headers={'Content-Type' : 'application/json'}, 
+            accept=['application/json', 'text/plain']
+        )
+        # syslog.syslog(' ---: ' + response + ' :--- ')
+        if response == '':
+            syslog.syslog(' ---: That folder is yet unknown to your DeepaMehta installation :--- ')
+            return False
+        else: 
+            syslog.syslog(' ---: folderId is:' + response + ' :--- ')
+            # response.indexOf("\"id\":") + 5, 3 -- strip Id Field
+            # take that ID and check for a Topicmap-Topic which is related to that via a FOLDER_CANVAS-Relation
+            return True
+    
     def getTopicsByType(self, topicTypeUri):
         # response = 
         # urllib.urlopen(SERVICE_URL + '/topic/by_type/' + topicTypeUri, None, ['Content-Type', 'application/json'])
-        response = GET(SERVICE_URL + '/topic/by_type/' + topicTypeUri, 
-          headers={'Content-Type' : 'application/json'}, 
-          accept=['application/json', 'text/plain']
+        response = GET(SERVICE_URL + '/topic/by_type/' + urllib.urlencode(topicTypeUri), 
+            headers={'Content-Type' : 'application/json'}, 
+            accept=['application/json', 'text/plain']
         )
-        syslog.syslog('monty.dmc.getTopicsByType: ' + repr(response))
+        syslog.syslog(' ---: ' + response + ' :--- ')
     
     def getTopicById(self, topicId):
         syslog.syslog('monty.dmc.getTopicById: ' + topicId)
         response = GET(SERVICE_URL + '/topic/' + topicId, 
-          headers={'Content-Type' : 'application/json'}, 
-          accept=['application/json', 'text/plain']
+            headers={'Content-Type' : 'application/json'}, 
+            accept=['application/json', 'text/plain']
         )
         syslog.syslog(' ---: ' + response + ' :--- ')
         
     def putFileTopic(self, filePath):
         syslog.syslog('monty.dmc.putFileTopic: ' + filePath)
         response = POST(SERVICE_URL + '/topic',
-          headers={'Content-Type' : 'application/json', 'Cookie' : 'workspace_id=62' },
-          accept=['application/json', 'text/plain', 'text/html'],
-          body = '{ "type_uri":"de/deepamehta/core/topictype/File", "properties": { "de/deepamehta/core/property/FileName": "file:///home/malted/.nautilus/python-extensions/submenu.py", "de/deepamehta/core/property/Path":"", "de/deepamehta/core/property/MediaType":"text/plain", "de/deepamehta/core/property/Size":0, "de/deepamehta/core/property/Content":"Hello World!"}}'
+            headers={'Content-Type' : 'application/json', 'Cookie' : 'workspace_id=62' },
+            accept=['application/json', 'text/plain', 'text/html'],
+            body = '{ "type_uri":"de/deepamehta/core/topictype/File", "properties": { "de/deepamehta/core/property/FileName": "file:///home/malted/.nautilus/python-extensions/submenu.py", "de/deepamehta/core/property/Path":"", "de/deepamehta/core/property/MediaType":"text/plain", "de/deepamehta/core/property/Size":0, "de/deepamehta/core/property/Content":"Hello World!"}}'
         )
-        # 
+        # ### ToDo: access id's or decode json
         # idStart = response.find(':')
         # idEnd = response.find('"', response.find(':')+1)
         syslog.syslog(' ---: ' + response + ' :--- ')
+    
+    def createFolderCanvasTopic(self, filePath):
+        canvasIndex = str.rfind(filePath, "/")
+        canvasName = filePath[canvasIndex + 1:]
+        syslog.syslog('monty.dmc.createFolderCanvas: ' + canvasName)
+        postBody = '{"type_uri":"de/deepamehta/core/topictype/Topicmap","properties":{"de/deepamehta/core/property/Title":"' + canvasName + '"}}'
+        response = POST(SERVICE_URL + '/topic',
+            headers={'Content-Type' : 'application/json', 'Cookie' : 'workspace_id=62' },
+            accept=['application/json', 'text/plain', 'text/html'],
+            body = postBody
+        )
+        # prettyRe = json.JSONDecoder().decode(response)
+        prettyRe = json.loads(response)
+        try:
+            syslog.syslog(' ---: ' + json.dumps(prettyRe) + ' :---')
+            syslog.syslog(' ---: ' + prettyRe + ' :---')
+        except BaseException:
+            syslog.syslog('error while accessing python decoded json')
+    
+    def updateFolderCanvasTopic(self, filePath):
+        syslog.syslog('monty.dmc.updateFolderCanvas: ' + filePath)
     
     def putTopicInMap(topicId):
         # {"topic_id":81,"x":496.0975611412235,"y":107.05648882256608}
