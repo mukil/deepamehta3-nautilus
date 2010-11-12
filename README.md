@@ -7,10 +7,12 @@ Enriches your favourite GNOME filebrowser nautilus with a direct link to a topic
 
 _Note:_ This program is currently just reported to be working with **Ubuntu 10.04** and GNOME Desktop. If you would like to help making it work on other platforms as well, check out the python libraries of your favourite filebrowser and the current [issues](https://github.com/mukil/deepamehta3-nautilus/issues).
 
-**1)** download and unpack the archive **2)** copy its content to the .nautilus folder **3)** install required packages **4)** install the deepamehta3-foldercanvas plugin into your personal deepamehta3 installation
+**1)** download and unpack the archive **2)** adapt your current deepamehta installation dir (optional) **3)** copy its content to the .nautilus folder **4)** install required packages **5)** install the deepamehta3-foldercanvas plugin into your personal deepamehta3 installation
 
 To install the software on your computer Ubuntu 10.04 operating system open up a terminal and enter
     unzip deepamehta3-nautilus-v1.0.zip
+    adapt the path of your DM_INSTALLATION_DIR (optional in the just extracted file _monty.py_)
+    switch from firefox to google-chrome as your default browser for the deepamehta client through changing the value of START_DM_IN_CHROME to _True_ (optional in the just extracted file 'deepamehta3-nautilus.py')
 
     mkdir .nautilus/python-extensions/ (if this folder does not already exist)
     cp deepamehta3-nautilus-v1.0/deepamehta3-nautilus.py ~/.nautilus/python-extensions/

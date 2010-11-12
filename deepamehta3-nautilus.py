@@ -17,7 +17,7 @@ import monty as dmc
 # TODO: proper testing
 
 DM_CLIENT_URL = 'http://localhost:8080/de.deepamehta.3-client/index.html'
-START_DM_IN_CHROME = True
+START_DM_IN_CHROME = False
 
 class DeepMenuProvider(nautilus.MenuProvider):
 
@@ -36,6 +36,7 @@ class DeepMenuProvider(nautilus.MenuProvider):
         # sub_menuitem.connect('activate', self.menu_activate_file_muc, files)
         # submenu.append_item(sub_menuitem)
         # assoc_menuitem.set_submenu(submenu)
+        syslog.syslog("Files: " + repr(files))
         #
         if files[0].is_directory(): # if a folder item is selected, provide a command for a folder canvas
             view_menuitem = nautilus.MenuItem('DeepMenuProvider::FolderView', 'Open with DeepaMehta', '')
@@ -48,7 +49,6 @@ class DeepMenuProvider(nautilus.MenuProvider):
 
     def get_background_items(self, window, file):
         # context menu provided directly on all "Folder Windows Backgrounds"
-        syslog.syslog("Trying Back Hard !! via BG ")
         serviceAvailable = dmc.isDeepaMehtaRunning()
         #
         if serviceAvailable:
