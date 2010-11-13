@@ -31,10 +31,10 @@ DM_INSTALLATION_DIR = '/home/malted/Desktop/diePaarDemos'
 
 def isDeepaMehtaRunning():
     # returns either True or False
-    syslog.syslog('INFO: checking if your local DeepaMehta-Server was already started..')
+    # syslog.syslog('INFO: checking if your local DeepaMehta-Server was already started..')
     # check if some topic is available
     try:
-        response = GET(SERVICE_URL + '/topic/63',
+        response = GET(SERVICE_URL + '/topic/3',
           headers={'Content-Type' : 'application/json'}, 
           accept=['application/json', 'text/plain']
         )
@@ -53,7 +53,7 @@ def getFolderTopicIdByPath(folderPath):
     key = 'de/deepamehta/core/property/Path'.replace("/", "%2F")
     value = folderPath.replace("/", "%2F")
     url = SERVICE_URL + '/topic/by_property/' + key + '/' + value
-    syslog.syslog("monty.getFolderTopicIdByPath: " + folderPath)
+    # syslog.syslog("monty.getFolderTopicIdByPath: " + folderPath)
     response = GET(url,
         headers={'Content-Type' : 'application/json', 'TE' : 'UTF-8'}, 
         accept=['application/json', 'text/plain']
@@ -68,8 +68,8 @@ def createRelation(relation_type_uri, topicOne, topicTwo):
     # returns id
     message = '{"type_id":"' + relation_type_uri + '","src_topic_id":'\
       + topicOne + ',"dst_topic_id":' + topicTwo + ',"properties":{}}'
-    syslog.syslog("mondy.creatingFolderCanvasRelation from folderId => "\
-      + topicOne + " to canvasId =>  " + topicTwo + "")
+    # syslog.syslog("mondy.creatingFolderCanvasRelation from folderId => "\
+      # + topicOne + " to canvasId =>  " + topicTwo + "")
     try:
         response = POST(SERVICE_URL + '/relation/',
           headers={'Content-Type' : 'application/json'}, 
@@ -87,7 +87,7 @@ def createRelation(relation_type_uri, topicOne, topicTwo):
 def createNewTopicmap(title):
     # creates a new topicmap
     # returns id
-    syslog.syslog("monty.createNewTopicmap.title => \"" + title + "\"")
+    # syslog.syslog("monty.createNewTopicmap.title => \"" + title + "\"")
     postBody = '{"type_uri":"de/deepamehta/core/topictype/Topicmap",'\
       + '"properties":{"de/deepamehta/core/property/Title":"' + title + '"}}'
     try:
@@ -98,7 +98,7 @@ def createNewTopicmap(title):
         )
         # syslog.syslog("monty.createNewTopicmap.response => " + repr(response))
         resultId = getFieldFromResponse(response, 'id')
-        syslog.syslog('monty.createNewTopicmap.resultId => ' + repr(resultId))
+        # syslog.syslog('monty.createNewTopicmap.resultId => ' + repr(resultId))
         return resultId
     except BaseException, e:
         syslog.syslog('EXCEPTION: ' + str(e))
@@ -118,7 +118,7 @@ def createFolderTopic(filePath):
         body = postBody)
     try:
         resultId = getFieldFromResponse(response, 'id')
-        syslog.syslog('monty.createFolderTopic.resultId => ' + resultId)
+        # syslog.syslog('monty.createFolderTopic.resultId => ' + resultId)
         return resultId
     except Exception, e:
         syslog.syslog("Exception while accessing the new folderTopicId: " + str(e))
@@ -126,7 +126,7 @@ def createFolderTopic(filePath):
     
     def getTopicById(topicId):
         # currently unused and untested and we can not other values than numbers from json
-        syslog.syslog('monty.getTopicById: ' + topicId)
+        # syslog.syslog('monty.getTopicById: ' + topicId)
         response = GET(SERVICE_URL + '/topic/' + topicId, 
             headers={'Content-Type' : 'application/json'}, 
             accept=['application/json', 'text/plain']
@@ -136,7 +136,7 @@ def createFolderTopic(filePath):
 def putTxtFileTopic(filePath):
     # unused dummy method which creates a new file topic in one deeapemehta instance 
     # with media type text/plain and lorem ipsum content
-    syslog.syslog('monty.putTxtFileTopic: ' + filePath)
+    # syslog.syslog('monty.putTxtFileTopic: ' + filePath)
     response = POST(SERVICE_URL + '/topic',
         headers={'Content-Type' : 'application/json' },
         accept=['application/json', 'text/plain', 'text/html'],
@@ -176,7 +176,7 @@ def getFolderCanvasId(folderId):
     url = SERVICE_URL + '/topic/' + folderId + '/'\
       + 'related_topics?include_topic_types='+ typeString + ''\
       + '&include_rel_types=FOLDER_CANVAS;INCOMING'
-    syslog.syslog("monty.getRelatedCanvasId: " + url)
+    # syslog.syslog("monty.getRelatedCanvasId: " + url)
     response = GET(url,
         headers={'Content-Type' : 'application/json', 'TE' : 'UTF-8'},
         accept=['application/json', 'text/plain']
@@ -185,14 +185,14 @@ def getFolderCanvasId(folderId):
     if resultId == '':
         syslog.syslog(' ---: That folder was not yet turned into a Folder Canvas :--- ')
     else:
-        syslog.syslog("monty.getRelatedCanvasId.canvasId => " + resultId + " :--- ")
+        syslog.syslog(" ---: For this folder there is already a canvas (" + resultId + ") :---")
     return resultId
 
 def createCanvasTopic(filePath, folderTopicId):
     # returns the ID of the topicmapTopic
     canvasIndex = str.rfind(filePath, "/")
     canvasName = filePath[canvasIndex + 1:]
-    syslog.syslog('monty.createFolderCanvas: ' + canvasName + ' and folderId: ' + folderTopicId)
+    # syslog.syslog('monty.createFolderCanvas: ' + canvasName + ' and folderId: ' + folderTopicId)
     try:
         #syslog.syslog(' ---: ' + json.dumps(prettyRe) + ' :---')
         canvasId = createNewTopicmap(canvasName)
@@ -204,7 +204,7 @@ def createCanvasTopic(filePath, folderTopicId):
     return ''
 
 def updateFolderCanvasTopic(topicmapId):
-    syslog.syslog('monty.updateFolderCanvas.canvasId => ' + topicmapId + '')
+    # syslog.syslog('monty.updateFolderCanvas.canvasId => ' + topicmapId + '')
     # "deepamehta3-foldercanvas.synchronize"
     location = SERVICE_URL + '/command/deepamehta3-foldercanvas.synchronize'
     message = '{topicmap_id: ' + topicmapId + '}'
@@ -219,6 +219,6 @@ def updateFolderCanvasTopic(topicmapId):
         return ''
     except SyntaxException:
         syslog.syslog("SyntaxException while accessing the new result")
-        syslog.syslog('updateFolderCanvasTopic is returning \'\' ')
+        # syslog.syslog('updateFolderCanvasTopic is returning \'\' ')
     return ''
 

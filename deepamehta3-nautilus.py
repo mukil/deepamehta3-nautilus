@@ -36,7 +36,6 @@ class DeepMenuProvider(nautilus.MenuProvider):
         # sub_menuitem.connect('activate', self.menu_activate_file_muc, files)
         # submenu.append_item(sub_menuitem)
         # assoc_menuitem.set_submenu(submenu)
-        syslog.syslog("Files: " + repr(files))
         #
         if files[0].is_directory(): # if a folder item is selected, provide a command for a folder canvas
             view_menuitem = nautilus.MenuItem('DeepMenuProvider::FolderView', 'Open with DeepaMehta', '')
@@ -54,7 +53,6 @@ class DeepMenuProvider(nautilus.MenuProvider):
         if serviceAvailable:
             menuitem = nautilus.MenuItem('DeepMenuProvider::View', 'Open with DeepaMehta', '')
             menuitem.connect('activate', self.menu_activate_view, file)
-            syslog.syslog("INFO: DeepaMehta Server is available, NICE.");
             return menuitem,
         else:
             menuitem = nautilus.MenuItem('DeepMenuProvider::Start', 'Start DeepaMehta Server', '')
@@ -73,25 +71,25 @@ class DeepMenuProvider(nautilus.MenuProvider):
         fileName = filePath[filePath.find("/"):] # file.get_uri()[7:]
         folderId = dmc.getFolderTopicIdByPath(filePath)
         if folderId != '':
-            syslog.syslog("dmc.viewWithDeepaMehta:folderId => " + folderId + " is already known")
+            # syslog.syslog("dmc.viewWithDeepaMehta:folderId => " + folderId + " is already known")
             canvasId = dmc.getFolderCanvasId(folderId)
             if canvasId == '':
                 canvasId = dmc.createCanvasTopic(fileName, folderId)
                 relationId = dmc.createRelation('FOLDER_CANVAS', folderId, canvasId)
-                syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
-                  + relationId + ' is now relating' + folderId + ' to ' + canvasId)
+                #syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
+                  #+ relationId + ' is now relating' + folderId + ' to ' + canvasId)
                 dmc.updateFolderCanvasTopic(canvasId)
                 self.openFolderCanvas(canvasId)
             else:
                 dmc.updateFolderCanvasTopic(canvasId)
                 self.openFolderCanvas(canvasId)
         else:
-            syslog.syslog("dmc.createCanvasTopic for folderLocation " + filePath);
+            #syslog.syslog("dmc.createCanvasTopic for folderLocation " + filePath);
             topicId = dmc.createFolderTopic(filePath) # tocheck
             canvasId = dmc.createCanvasTopic(fileName, topicId)  # tocheck
             relationId = dmc.createRelation('FOLDER_CANVAS', topicId, canvasId)  # tocheck
-            syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
-              + relationId + ' is now relating  ' + topicId + ' to ' + canvasId)
+            #syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
+              #+ relationId + ' is now relating  ' + topicId + ' to ' + canvasId)
             dmc.updateFolderCanvasTopic(canvasId)  # tocheck
             self.openFolderCanvas(canvasId)
     
@@ -104,17 +102,17 @@ class DeepMenuProvider(nautilus.MenuProvider):
         fileName = filePath[filePath.find("/"):] # file.get_uri()[7:]
         folderId = dmc.getFolderTopicIdByPath(filePath)
         if folderId != '':
-            syslog.syslog("dmc.viewWithDeepaMehta:folderId => " + folderId + " is already known")
+            #syslog.syslog("dmc.viewWithDeepaMehta:folderId => " + folderId + " is already known")
             canvasId = dmc.getFolderCanvasId(folderId)
             dmc.updateFolderCanvasTopic(canvasId)
             self.openFolderCanvas(canvasId)
         else:
-            syslog.syslog("dmc.createCanvasTopic for folderLocation " + filePath);
+            #syslog.syslog("dmc.createCanvasTopic for folderLocation " + filePath);
             topicId = dmc.createFolderTopic(filePath)
             canvasId = dmc.createCanvasTopic(fileName, topicId)
             relationId = dmc.createRelation('FOLDER_CANVAS', topicId, canvasId)
-            syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
-              + relationId + ' is now relating  ' + topicId + ' to ' + canvasId)
+            #syslog.syslog('dmc.createFolderCanvasRelation.resultId => '\
+              #+ relationId + ' is now relating  ' + topicId + ' to ' + canvasId)
             dmc.updateFolderCanvasTopic(canvasId)
             self.openFolderCanvas(canvasId)
     
@@ -138,7 +136,7 @@ class DeepMenuProvider(nautilus.MenuProvider):
         # to have the topictype configurable would be needed and definitely introduce a file correctly to dm with..
         # mime/type, size and other properties which the dmc relies on
         # self.getTopicsByType(urllib.urlencode('de/deepamehta/core/topictype/ToDo', 'UTF-8'));
-        syslog.syslog('Item to associate with is: ' + repr(menu))
+        # syslog.syslog('Item to associate with is: ' + repr(menu))
         for crtFile in files:
             filename = urllib.unquote(crtFile.get_uri()[7:])
             syslog.syslog('Associate Item/s: ' + filename + ' of Type: ' + crtFile.get_mime_type())
